@@ -1,6 +1,7 @@
 recursive-delete-patterns:
 - BUILD
 default-go-version: 1.13.15
+skip-gomod: true
 rules:
 - destination: client-go
   library: true
@@ -23,7 +24,7 @@ rules:
       dir: staging/src/kubesphere.io/api
     name: master
 
-  smoke-test: |
-    # assumes GO111MODULE=on
-    go build ./...
-    go test ./...
+  # smoke-test: |
+  #   # assumes GO111MODULE=on
+  #   go build ./...
+  #   go test ./...
