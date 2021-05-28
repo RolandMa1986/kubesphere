@@ -26,6 +26,7 @@ import (
 
 	"kubesphere.io/api/notification/v2beta1"
 
+	hellokubesphere "kubesphere.io/kubesphere/pkg/kapis/hellokubesphere/v1alpha1"
 	openpitrixv2alpha1 "kubesphere.io/kubesphere/pkg/kapis/openpitrix/v2alpha1"
 
 	"strconv"
@@ -278,6 +279,7 @@ func (s *APIServer) installKubeSphereAPIs() {
 	urlruntime.Must(kubeedgev1alpha1.AddToContainer(s.container, s.Config.KubeEdgeOptions.Endpoint))
 	urlruntime.Must(notificationkapisv2beta1.AddToContainer(s.container, s.InformerFactory, s.KubernetesClient.Kubernetes(),
 		s.KubernetesClient.KubeSphere()))
+	urlruntime.Must(hellokubesphere.AddToContainer(s.container))
 }
 
 func (s *APIServer) Run(stopCh <-chan struct{}) (err error) {
