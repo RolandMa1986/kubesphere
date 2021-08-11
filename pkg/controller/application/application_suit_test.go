@@ -122,7 +122,7 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 		Expect(err).NotTo(HaveOccurred(), "failed to setup application reconciler")
 
 		go func() {
-			err = mgr.Start(stopCh)
+			err = mgr.Start(context.Background())
 			Expect(err).NotTo(HaveOccurred(), "failed to start manager")
 		}()
 	})

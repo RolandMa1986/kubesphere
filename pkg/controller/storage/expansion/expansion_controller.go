@@ -132,8 +132,8 @@ func NewVolumeExpansionController(
 	return controller
 }
 
-func (c *VolumeExpansionController) Start(stopCh <-chan struct{}) error {
-	return c.Run(5, stopCh)
+func (c *VolumeExpansionController) Start(ctx context.Context) error {
+	return c.Run(5, ctx.Done())
 }
 
 func (c *VolumeExpansionController) Run(threadiness int, stopCh <-chan struct{}) error {
