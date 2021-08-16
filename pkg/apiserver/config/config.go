@@ -42,6 +42,7 @@ import (
 	"kubesphere.io/kubesphere/pkg/simple/client/network"
 	"kubesphere.io/kubesphere/pkg/simple/client/notification"
 	"kubesphere.io/kubesphere/pkg/simple/client/openpitrix"
+	"kubesphere.io/kubesphere/pkg/simple/client/router"
 	"kubesphere.io/kubesphere/pkg/simple/client/s3"
 	"kubesphere.io/kubesphere/pkg/simple/client/servicemesh"
 	"kubesphere.io/kubesphere/pkg/simple/client/sonarqube"
@@ -104,6 +105,7 @@ type Config struct {
 	NotificationOptions   *notification.Options                      `json:"notification,omitempty" yaml:"notification,omitempty" mapstructure:"notification"`
 	KubeEdgeOptions       *kubeedge.Options                          `json:"kubeedge,omitempty" yaml:"kubeedge,omitempty" mapstructure:"kubeedge"`
 	MeteringOptions       *metering.Options                          `json:"metering,omitempty" yaml:"metering,omitempty" mapstructure:"metering"`
+	RouterOptions         *router.Options                            `json:"router,omitempty" yaml:"router,omitempty" mapstructure:"router"`
 }
 
 // newConfig creates a default non-empty Config
@@ -129,6 +131,7 @@ func New() *Config {
 		AuditingOptions:       auditing.NewAuditingOptions(),
 		KubeEdgeOptions:       kubeedge.NewKubeEdgeOptions(),
 		MeteringOptions:       metering.NewMeteringOptions(),
+		RouterOptions:         router.NewRouterOptions(),
 	}
 }
 

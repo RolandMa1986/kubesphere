@@ -33,6 +33,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	"github.com/operator-framework/helm-operator-plugins/pkg/annotation"
+	"github.com/operator-framework/helm-operator-plugins/pkg/reconciler"
+	"github.com/operator-framework/helm-operator-plugins/pkg/watches"
+
 	"kubesphere.io/kubesphere/cmd/controller-manager/app/options"
 	"kubesphere.io/kubesphere/pkg/apis"
 	controllerconfig "kubesphere.io/kubesphere/pkg/apiserver/config"
@@ -76,6 +80,7 @@ func NewControllerManagerCommand() *cobra.Command {
 			NetworkOptions:        conf.NetworkOptions,
 			MultiClusterOptions:   conf.MultiClusterOptions,
 			ServiceMeshOptions:    conf.ServiceMeshOptions,
+			RouterOption:          conf.RouterOptions,
 			LeaderElection:        s.LeaderElection,
 			LeaderElect:           s.LeaderElect,
 			WebhookCertDir:        s.WebhookCertDir,
@@ -295,6 +300,44 @@ func run(s *options.KubeSphereControllerManagerOptions, ctx context.Context) err
 		klog.Fatalf("Unable to create ResourceQuota controller: %v", err)
 	}
 
+	if !s.RouterOption.IsEmpty() {
+		ws, err := watches.Load(s.RouterOption.WatchesPath)
+		if err != nil {
+			klog.Fatalf("Failed to create new manager factories: %v", err)
+		}
+
+		for _, w := range ws {
+			// Register controller with the factory
+			reconcilePeriod := s.RouterOption.ReconcilePeriod
+			if w.ReconcilePeriod != nil {
+				reconcilePeriod = w.ReconcilePeriod.Duration
+			}
+
+			maxConcurrentReconciles := s.RouterOption.MaxConcurrentReconciles
+			if w.MaxConcurrentReconciles != nil {
+				maxConcurrentReconciles = *w.MaxConcurrentReconciles
+			}
+
+			r, err := reconciler.New(
+				reconciler.WithChart(*w.Chart),
+				reconciler.WithGroupVersionKind(w.GroupVersionKind),
+				reconciler.WithOverrideValues(w.OverrideValues),
+				reconciler.SkipDependentWatches(w.WatchDependentResources != nil && !*w.WatchDependentResources),
+				reconciler.WithMaxConcurrentReconciles(maxConcurrentReconciles),
+				reconciler.WithReconcilePeriod(reconcilePeriod),
+				reconciler.WithInstallAnnotations(annotation.DefaultInstallAnnotations...),
+				reconciler.WithUpgradeAnnotations(annotation.DefaultUpgradeAnnotations...),
+				reconciler.WithUninstallAnnotations(annotation.DefaultUninstallAnnotations...),
+			)
+			if err != nil {
+				klog.Errorf("unable to create helm reconciler:%v", err)
+			}
+			if err := r.SetupWithManager(mgr); err != nil {
+				klog.Errorf("unable to create controller:%v", err)
+			}
+			klog.Infof("configured watch", "gvk", w.GroupVersionKind, "chartPath", w.ChartPath, "maxConcurrentReconciles", maxConcurrentReconciles, "reconcilePeriod", reconcilePeriod)
+		}
+	}
 	// TODO(jeff): refactor config with CRD
 	servicemeshEnabled := s.ServiceMeshOptions != nil && len(s.ServiceMeshOptions.IstioPilotHost) != 0
 	if err = addControllers(mgr,
