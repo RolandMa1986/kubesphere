@@ -1,4 +1,4 @@
-FROM golang:1.12
+FROM golang:1.21.7
 
 RUN apt-get update && apt-get install -y apt-transport-https jq openssl libltdl7 && \
     go get -u github.com/onsi/ginkgo/ginkgo && \
