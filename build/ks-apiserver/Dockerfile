@@ -3,7 +3,7 @@
 # that can be found in the LICENSE file.
 
 # Download dependencies
-FROM alpine:3.11 as base_os_context
+FROM alpine:3.17 as base_os_context
 
 ARG TARGETARCH
 ARG TARGETOS
@@ -37,7 +37,7 @@ RUN mv /workspace/bin/cmd/ks-apiserver ${OUTDIR}/usr/local/bin/
 # Final image
 #############
 
-FROM alpine:3.11 
+FROM alpine:3.17 
 
 COPY --from=base_os_context /out/ /
 COPY --from=build_context /out/ /
